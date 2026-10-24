@@ -200,6 +200,51 @@ td.name{font-weight:700;min-width:11rem}
 }
 @media (prefers-reduced-motion:no-preference){.rcard{animation:rin .22s ease-out both}@keyframes rin{from{transform:translateY(3px)}to{transform:none}}}
 
+/* ===== Unified button language: light palette, two hues (teal + indigo), soft translucency, linked button stack ===== */
+:root:not([data-theme="dark"]){--bg:#F1F3F5;--surface:#FFFFFF;--surface-2:#F7F8FA;--line:#D7DCE1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0E1317;--surface:#19212A;--surface-2:#141B22;--line:#36434E}}
+:root{--hueA:var(--accent);--hueB:var(--listen)}
+/* the stack: title + action buttons sit on one tinted rail, so they read as one connected unit */
+.stack{position:relative;display:grid;gap:8px;padding:8px;border-radius:14px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--hueA) 7%,transparent),color-mix(in srgb,var(--hueB) 7%,transparent));
+  border:1px solid color-mix(in srgb,var(--hueA) 16%,transparent)}
+.stack::before{content:"";position:absolute;inset-block:14px;inset-inline-start:-1px;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--hueA) 70%,transparent),color-mix(in srgb,var(--hueB) 60%,transparent))}
+/* title as a wide button */
+.rtitle{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;
+  padding:12px 14px;border-radius:10px;font-weight:700;font-size:1.1rem;line-height:1.38;color:var(--ink);text-wrap:pretty;
+  background:color-mix(in srgb,var(--surface) 72%,transparent);border:1.5px solid color-mix(in srgb,var(--hueA) 28%,transparent);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .15s,border-color .15s}
+.rtitle .tt{flex:1;min-width:0}
+.rtitle .tgo{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;
+  background:color-mix(in srgb,var(--hueA) 14%,transparent);color:var(--hueA)}
+.rtitle .tgo svg{width:16px;height:16px}
+.rtitle:hover{background:color-mix(in srgb,var(--hueA) 10%,var(--surface));border-color:color-mix(in srgb,var(--hueA) 55%,transparent);text-decoration:none}
+.rtitle:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+/* action buttons: translucent fills in the two hues */
+.act{transition:background .15s,border-color .15s,transform .1s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.act:active{transform:scale(.98)}
+.act.a1{background:color-mix(in srgb,var(--hueA) 86%,transparent);color:var(--on-accent);border-color:color-mix(in srgb,var(--hueA) 40%,transparent)}
+.act.a1:hover{background:var(--hueA);filter:none}
+.act.a2{background:color-mix(in srgb,var(--hueB) 13%,transparent);color:var(--hueB);border:1.5px solid color-mix(in srgb,var(--hueB) 26%,transparent)}
+.act.a2:hover{background:color-mix(in srgb,var(--hueB) 22%,transparent);filter:none}
+.act.a3{background:color-mix(in srgb,var(--surface) 70%,transparent);color:var(--ink);border:1.5px solid color-mix(in srgb,var(--hueA) 30%,transparent)}
+.act.a3:hover{background:color-mix(in srgb,var(--hueA) 8%,var(--surface))}
+.act svg{opacity:.9}
+/* small tool buttons under the card */
+.minibtn{background:color-mix(in srgb,var(--surface-2) 75%,transparent);border-color:color-mix(in srgb,var(--hueA) 18%,var(--line));transition:background .15s,border-color .15s}
+.minibtn:hover{background:color-mix(in srgb,var(--hueA) 8%,var(--surface));border-color:color-mix(in srgb,var(--hueA) 45%,transparent);color:var(--ink)}
+.minibtn svg{opacity:.85}
+/* general buttons */
+.btn{transition:background .15s,border-color .15s}
+.btn:not(.primary):not(.wa):not(.danger){background:color-mix(in srgb,var(--surface) 80%,transparent);border-color:color-mix(in srgb,var(--hueA) 26%,var(--line))}
+.btn:not(.primary):not(.wa):not(.danger):hover{background:color-mix(in srgb,var(--hueA) 8%,var(--surface));border-color:color-mix(in srgb,var(--hueA) 55%,transparent)}
+.btn.primary{background:color-mix(in srgb,var(--hueA) 88%,transparent);border-color:transparent}
+.btn.primary:hover{background:var(--hueA)}
+.rcard{border-color:color-mix(in srgb,var(--hueA) 14%,var(--line));box-shadow:0 1px 2px rgba(16,22,28,.04),0 4px 14px rgba(16,22,28,.04)}
+.mline{border-radius:8px;padding:2px 6px;margin-inline:-6px;background:transparent;transition:background .15s}
+.mline:hover,.mline:focus-visible{background:color-mix(in srgb,var(--hueA) 9%,transparent);text-decoration:none}
+@media (max-width:640px){.stack{padding:6px;gap:6px}.rtitle{padding:12px;font-size:1.06rem}}
 </style>
 
 <div id="app">
@@ -287,8 +332,8 @@ const RUI=(()=>{
     const bits=[isNew(it)?`<span class="chip new">חדש</span>`:"",kind,it.sourceName?`<span>${esc(it.sourceName)}</span>`:"",it.published?`<span class="mono">${esc(fmt(it.published))}</span>`:"",o.showTopic?`<span>${esc(cfg.topicName(it.topicId))}</span>`:"",o.showDate?`<span class="mono">בדו״ח ${esc(fmt(it.date))}</span>`:""].filter(Boolean).join("");
     return `<article class="rcard${it.heritage?" heritage":""}${o.flash?" flash":""}" id="i-${esc(it.id)}">
       ${bits?`<div class="rkind">${bits}</div>`:""}
-      <button type="button" class="rtitle" data-read="${esc(it.id)}">${esc(it.title)}</button>
-      <div class="acts">${actions(it)}</div>
+      <div class="stack"><button type="button" class="rtitle" data-read="${esc(it.id)}" aria-label="${esc(it.title)} · לפרטים"><span class="tt">${esc(it.title)}</span><span class="tgo" aria-hidden="true">${IC.book}</span></button>
+      <div class="acts">${actions(it)}</div></div>
       <div class="rfoot"><div class="badges">${badges(it)}</div><div class="tools">${cfg.extraTools(it)}<button type="button" class="minibtn" data-save-item="${esc(it.id)}" aria-label="לשמור לעצמי עם רעיון">${IC.save}<span>לשמור</span></button><button type="button" class="minibtn" data-share-item="${esc(it.id)}" aria-label="שיתוף">${IC.share}<span>שיתוף</span></button></div></div>
     </article>`;
   }
