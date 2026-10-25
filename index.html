@@ -601,6 +601,8 @@ const DATA=(()=>{try{return JSON.parse(document.getElementById("radar-data").tex
 const OWNER=Object.assign({name:"דוד צל",whatsapp:"",email:""},DATA.owner||{});
 const PUBLIC_URL=DATA.publicUrl||"";
 const TOPICS=DATA.topics||[],REPORTS=(DATA.reports||[]).sort((a,b)=>b.date.localeCompare(a.date)),ITEMS=(DATA.items||[]).filter(i=>!i.hidden),SOURCES=DATA.sources||[];
+const FOOT1="המידע בדו״ח נאסף ונכתב אוטומטית בסיוע בינה מלאכותית ממקורות פומביים בלבד. ״מכ״ם מורשת TEC״ הוא כלי שיתוף ידע מקצועי שמפעיל ומשתף דיויד צל, שעורך את התחומים והמקורות המוצגים ללא עריכת התוכן.";
+const FOOT2="המידע נאסף ממקורות פומביים ברשת האינטרנט ומסוכם בסיוע בינה מלאכותית. ייתכנו בו אי־דיוקים, ולכן יש לבדוק כל פרט מול המקור המקושר. זכויות התוכן המקורי שמורות לבעליו. השימוש במידע הוא על דעת המשתמש ובאחריותו.";
 const AI_LINE="נאסף ונכתב אוטומטית בסיוע AI ממקורות פומביים. דוד צל קובע את התחומים והמקורות. לכל פריט קישור למקור.";
 const DISCLAIMER="״מכ״ם מורשת TEC״ הוא כלי שיתוף ידע מקצועי שמפעיל דוד צל ביוזמה אישית, ואינו מייצג את עמדת רשות העתיקות או כל גוף אחר. המידע נאסף ממקורות פומביים ברשת ומסוכם בסיוע בינה מלאכותית. ייתכנו בו אי-דיוקים, ולכן יש לבדוק כל פרט מול המקור המקושר. זכויות התוכן המקורי שמורות לבעליו. השימוש במידע הוא על דעת המשתמש ובאחריותו.";
 const TABS=[["today","הדו״ח"],["archive","ארכיון וחיפוש"],["sources","מקורות מומלצים"],["suggest","הציעו מידע"],["about","אודות והצטרפות"]];
@@ -716,7 +718,7 @@ function render(){
   $("#themeSlot").innerHTML=RUI.themeBtn();
   $("#mastactions").innerHTML=`<button class="btn primary" data-tab="suggest">${IC.plus}<span>הציעו מקור או מידע</span></button>${n?`<a class="btn wa" href="https://wa.me/${n}?text=${encodeURIComponent("שלום דוד, אשמח לקבל את העדכון היומי של מכ״ם מורשת TEC.\nשם:\nאיך לשלוח לי: וואטסאפ / מייל")}" target="_blank" rel="noopener">${IC.wa}<span>קבלת העדכון היומי</span></a>`:`<button class="btn" data-tab="about">קבלת העדכון היומי</button>`}${PUBLIC_URL?`<button class="btn" data-copy="${esc(PUBLIC_URL)}">${IC.link}<span>העתקת קישור למכ״ם</span></button>`:""}`;
   $("#view").innerHTML={today:vToday,archive:vArchive,sources:vSources,suggest:vSuggest,about:vAbout}[S.view]();
-  $("#disclaimer").innerHTML=`<p class="ailabel" style="margin:0 0 6px">${esc(AI_LINE)}</p>${esc("כלי שיתוף ידע ביוזמה אישית של דוד צל, שאינו מייצג גוף כלשהו")} · <button class="linkbtn" data-terms>תנאי שימוש ובקשת הסרה</button>${DATA.generatedAt?`<div class="mono" style="margin-top:6px">עודכן ${esc(fmt(DATA.generatedAt.slice(0,10)))}</div>`:""}`;
+  $("#disclaimer").innerHTML=`<p style="margin:0 0 6px">${esc(FOOT1)}</p><p style="margin:0 0 6px">${esc(FOOT2)}</p><button class="linkbtn" data-terms>תנאי שימוש ובקשת הסרה</button>${DATA.generatedAt?`<div class="mono" style="margin-top:6px">עודכן ${esc(fmt(DATA.generatedAt.slice(0,10)))}</div>`:""}`;
   if(S.view==="suggest")updWa();
 }
 function updWa(){const a=$("#sendWa");if(a)a.href=`https://wa.me/${waNum()}?text=${encodeURIComponent(sugText())}`}
