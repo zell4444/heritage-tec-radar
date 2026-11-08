@@ -272,6 +272,9 @@ td.name{font-weight:700;min-width:11rem}
 .qbtn svg{width:22px;height:22px}
 .qbtn.stop{background:color-mix(in srgb,var(--accent) 88%,transparent);color:var(--on-accent)}
 .fsteps{margin:0;padding-inline-start:1.3em;display:grid;gap:6px;line-height:1.6}
+.thead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+.thead h4{margin:0}
+.topic .thead{margin-bottom:8px}
 </style>
 
 <div id="app">
@@ -336,7 +339,7 @@ const RUI=(()=>{
         +(listen?aGo(watch?"a2":"a1",IC.phones,"לשמוע",listen,id):aBtn("a2",IC.speaker,"לשמוע תקציר",`data-listen="${id}"`))
         +(url?aPrev("a3",IC.link,"קישור",id,"link"):"");
     }
-    return aBtn("a1",IC.book,"לקרוא",`data-read="${id}"`)+aBtn("a2",IC.speaker,"לשמוע",`data-listen="${id}"`)+(url?aPrev("a3",IC.link,"קישור",id,"link"):"");
+    return aBtn("a1",IC.book,"לקרוא",`data-read="${id}"`)+aBtn("a2",IC.speaker,"לשמוע תקציר",`data-listen="${id}"`)+(url?aBtn("a2",IC.phones,"לשמוע הכל",`data-full-listen="${id}"`)+aPrev("a3",IC.link,"קישור",id,"link"):"");
   }
   /* ---------- "new" marking (per device) ---------- */
   let opened=new Set(),prevDate=null,latestDate=null;
@@ -673,7 +676,7 @@ RUI.init();
 const itemSort=(a,b)=>(b.isUpdate?1:0)-(a.isUpdate?1:0)||(b.heritage?1:0)-(a.heritage?1:0)||(b.relevance||0)-(a.relevance||0);
 const cardOf=(i,o={})=>RUI.card(i,{...o,flash:S.flash===i.id});
 function byTopic(list,opts){const out=[];const seen=new Set();
-  for(const t of sortedTopics()){const its=list.filter(i=>i.topicId===t.id).sort(itemSort);if(!its.length)continue;seen.add(t.id);out.push(`<section class="topic"><h4>${esc(t.name)} · ${its.length}</h4><div class="nlist">${its.map(i=>cardOf(i,opts)).join("")}</div></section>`)}
+  for(const t of sortedTopics()){const its=list.filter(i=>i.topicId===t.id).sort(itemSort);if(!its.length)continue;seen.add(t.id);out.push(`<section class="topic"><div class="thead"><h4>${esc(t.name)} · ${its.length}</h4><button class="minibtn" data-play-all="${esc(its.map(i=>i.id).join(","))}" data-intro="${esc(t.name+". "+(its.length===1?"ידיעה אחת.":its.length+" ידיעות."))}">${IC.speaker}<span>להאזין לתחום</span></button></div><div class="nlist">${its.map(i=>cardOf(i,opts)).join("")}</div></section>`)}
   const rest=list.filter(i=>!seen.has(i.topicId));if(rest.length)out.push(`<section class="topic"><h4>תחומים נוספים</h4><div class="nlist">${rest.sort(itemSort).map(i=>cardOf(i,opts)).join("")}</div></section>`);
   return out.join("")}
 
@@ -690,7 +693,7 @@ function vToday(){
   </div>
   <section class="part"><div class="parthead"><h3>לראות ולשמוע בבוקר</h3><span class="sub">${media.length} קישורים · וידאו, פודקאסטים והרצאות</span></div>
     ${media.length?`<div class="mgrid">${media.map(i=>cardOf(i)).join("")}</div>`:`<div class="empty">אין היום קישורי צפייה חדשים.</div>`}</section>
-  <section class="part"><div class="parthead"><h3>מה חדש היום</h3><span class="sub">${news.length} ממצאים לפי תחומים</span></div>
+  <section class="part"><div class="parthead"><h3>מה חדש היום</h3><span class="sub">${news.length} ממצאים לפי תחומים</span>${news.length?`<button class="minibtn" data-play-all="${esc(sortedTopics().flatMap(t=>news.filter(i=>i.topicId===t.id).sort(itemSort)).concat(news.filter(i=>!sortedTopics().some(t=>t.id===i.topicId))).map(i=>i.id).join(","))}" data-intro="מה חדש היום. ${news.length} ממצאים.">${IC.speaker}<span>להאזין לכל הממצאים</span></button>`:""}</div>
     ${highlightsHTML(r,tName)}
     ${r.weekly?`<div class="panel" style="max-width:none;margin-top:12px"><strong>סיכום מגמות שבועי</strong><p style="margin:0;white-space:pre-line">${esc(r.weekly)}</p></div>`:""}
     ${news.length?byTopic(news):`<div class="empty">לא נמצא היום מידע חדש בעל משמעות.</div>`}</section>`;
