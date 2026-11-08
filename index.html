@@ -1,4 +1,4 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="description" content="סריקה יומית של חידושים בטכנולוגיה לתיעוד, שימור והנגשה של אתרי מורשת וזיכרון. כלי שיתוף ידע ביוזמה אישית של דוד צל."><meta property="og:title" content="מכ״ם מורשת TEC"><meta property="og:description" content="עדכון בוקר על חידושים בטכנולוגיה לתיעוד, שימור והנגשה של אתרי מורשת וזיכרון, מאת דוד צל."><meta property="og:url" content="https://zell4444.github.io/heritage-tec-radar/"><meta property="og:type" content="website"><meta property="og:locale" content="he_IL"></head><body>
+<!doctype html><html lang="he" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta property="og:title" content="מכ״ם מורשת TEC"><meta property="og:description" content="עדכון בוקר על חידושים בטכנולוגיה לתיעוד, שימור והנגשה של אתרי מורשת וזיכרון, מאת דוד צל."><meta property="og:url" content="https://zell4444.github.io/heritage-tec-radar/"><meta property="og:type" content="website"><meta property="og:locale" content="he_IL"></head><body>
 <title>מכ״ם מורשת TEC</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -259,6 +259,19 @@ td.name{font-weight:700;min-width:11rem}
 .minute ol li{display:flex;gap:10px;align-items:flex-start;counter-increment:mn}
 .minute ol li::before{content:counter(mn);flex:none;display:inline-flex;align-items:center;justify-content:center;width:1.6em;height:1.6em;margin-top:.1em;border-radius:50%;font-size:.85rem;font-weight:700;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
 .hl .mline,.minute .mline{display:block}
+
+/* continuous-listening bar */
+.qbar{position:fixed;inset-inline:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:55;direction:rtl;display:flex;align-items:center;gap:10px;
+  max-width:720px;margin-inline:auto;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1.5px solid color-mix(in srgb,var(--accent) 35%,transparent);box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.qbar .qt{flex:1;min-width:0;display:grid}
+.qbar .qt strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.98rem}
+.qbar .qn{font-size:.8rem;color:var(--accent);font-weight:700}
+.qbtn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:56px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface));color:var(--accent);font-weight:700;cursor:pointer;font-size:.85rem}
+.qbtn svg{width:22px;height:22px}
+.qbtn.stop{background:color-mix(in srgb,var(--accent) 88%,transparent);color:var(--on-accent)}
+.fsteps{margin:0;padding-inline-start:1.3em;display:grid;gap:6px;line-height:1.6}
 </style>
 
 <div id="app">
@@ -423,13 +436,14 @@ const RUI=(()=>{
       u.onerror=e=>{if(gen===tts.gen&&e.error!=="interrupted"&&e.error!=="canceled")onEnd()};s.speak(u)});
     if(!list.length)onEnd();
   }
-  function stopSpeak(){const s=synth();tts.gen++;if(s)s.cancel();tts.on=false;tts.id=null;updPlay();resetMinuteBtns()}
+  function stopSpeak(){if(Q.on&&tts.id!=="__queue"){}const s=synth();tts.gen++;if(s)s.cancel();tts.on=false;tts.id=null;updPlay();resetMinuteBtns()}
   /* the spoken version: speech_he / speech_en are written for listening by the daily scan; otherwise the title and the text */
   function spokenFor(it,l){
     if(l==="en"){const x=it.details_en||it.summary_en||"";return it.speech_en||(x?(it.title_en||it.title)+". "+x:"")}
     const x=it.details||it.summary||"";return it.speech_he||(x?it.title+". "+x:"")}
   function speak(id){
     const s=synth();if(!s){toast("ההקראה לא נתמכת בדפדפן הזה");return}
+    if(Q.on){Q.on=false;qBar();qLock(false)}
     const it=find(id);if(!it)return;const text=spokenFor(it,lang);
     if(!text){toast("אין עדיין גרסה בשפה הזו");return}
     const v=voiceFor(lang);
@@ -437,8 +451,40 @@ const RUI=(()=>{
     tts.on=true;tts.id=id;updPlay();
     speakSegs(segments(text,lang),()=>{tts.on=false;tts.id=null;updPlay()});
   }
+  /* ---------- continuous listening: the morning minute, then every item of the report, one after another ---------- */
+  const Q={ids:[],i:-1,on:false,intro:"",lock:null};
+  function qBar(){let b=document.getElementById("qbar");
+    if(!Q.on){if(b)b.remove();return}
+    if(!b){b=document.createElement("div");b.id="qbar";b.className="qbar";b.setAttribute("role","region");b.setAttribute("aria-label","האזנה רציפה");document.body.appendChild(b)}
+    const it=Q.i>=0?find(Q.ids[Q.i]):null;
+    b.innerHTML=`<div class="qt"><span class="qn">${Q.i<0?"הבוקר בדקה":`ידיעה ${Q.i+1} מתוך ${Q.ids.length}`}</span><strong>${esc(it?it.title:"פתיח")}</strong></div>
+      <button type="button" class="qbtn" data-q="next">${IC.next||"⏭"}<span>הבא</span></button><button type="button" class="qbtn stop" data-q="stop">${IC.stop}<span>עצירה</span></button>`}
+  async function qLock(on){try{if(on&&navigator.wakeLock&&!Q.lock){Q.lock=await navigator.wakeLock.request("screen")}else if(!on&&Q.lock){await Q.lock.release();Q.lock=null}}catch(e){}}
+  function qPlay(){if(!Q.on)return;
+    if(Q.i>=Q.ids.length){Q.on=false;qBar();qLock(false);tts.on=false;tts.id=null;speakSegs(segments("זה סוף הדו״ח. יום טוב.","he"),()=>{});return}
+    qBar();const it=Q.i>=0?find(Q.ids[Q.i]):null;
+    const text=Q.i<0?Q.intro:`ידיעה ${Q.i+1}. ${spokenFor(it||{},"he")}`;
+    tts.on=true;tts.id="__queue";
+    speakSegs(segments(text||".","he"),()=>{if(!Q.on)return;Q.i++;setTimeout(qPlay,600)})}
+  function qStart(ids,intro){if(!synth()){toast("ההקראה לא נתמכת בדפדפן הזה");return}
+    stopSpeak();Q.ids=ids.filter(id=>find(id));if(!Q.ids.length&&!intro)return;Q.intro=intro||"";Q.i=intro?-1:0;Q.on=true;qLock(true);qPlay()}
+  function qStop(){Q.on=false;qBar();qLock(false);stopSpeak()}
+  function qNext(){if(!Q.on)return;tts.gen++;const s=synth();if(s)s.cancel();Q.i++;qPlay()}
+  /* full article: browsers and phones have a built-in "listen to this page"; we open the source and explain where it is */
+  function fullListenHelp(id){const it=find(id);if(!it)return;const url=safeUrl(it.url);if(!url)return;markOpened(id);
+    const ua=navigator.userAgent||"";const ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&"ontouchend" in document);const android=/Android/.test(ua);const edge=/Edg\//.test(ua);
+    const steps=ios?`<li>הכתבה תיפתח בספארי.</li><li>לחצו על סמל <b>aA</b> (או <b>☰</b>) בשורת הכתובת.</li><li>בחרו <b>האזנה לדף</b> (Listen to Page). אפשר לנעול את המסך, וההקראה תמשיך.</li>`
+      :android?`<li>הכתבה תיפתח בכרום.</li><li>לחצו על <b>⋮</b> (שלוש הנקודות) למעלה.</li><li>בחרו <b>האזנה לדף</b> (Listen to this page). ההקראה ממשיכה גם כשהמסך כבוי.</li>`
+      :edge?`<li>הכתבה תיפתח בכרטיסייה חדשה ב-Edge.</li><li>לחצו <b>Ctrl+Shift+U</b>, או לחיצה ימנית על הדף ובחרו <b>הקראה בקול</b> (Read aloud).</li>`
+      :`<li>הכתבה תיפתח בכרטיסייה חדשה.</li><li>בכרום: לחיצה ימנית על הדף ← <b>פתיחה במצב קריאה</b> (Reading mode) ← כפתור <b>▶</b> בחלונית שנפתחת.</li><li>ב-Edge: <b>Ctrl+Shift+U</b> (הקראה בקול).</li>`;
+    openSheet(`<div class="sheet-top"><h3>להאזין לכתבה המלאה</h3><button class="closebtn" data-close-sheet aria-label="סגירה">${IC.close}</button></div>
+      <p style="margin:0">${esc(it.title)}</p>
+      <ol class="fsteps">${steps}</ol>
+      <a class="act a1 bigopen" href="${esc(url)}" target="_blank" rel="noopener" data-ext-open data-open-id="${esc(it.id)}">${IC.link}<span>לפתוח את הכתבה ב-${esc(hostName(url))}</span></a>
+      <div class="readnote">ההקראה נעשית בדפדפן שלכם, ישירות מהאתר של המפרסם, ולכן היא כוללת את כל הטקסט. באתרים עם חומת תשלום, בקובצי PDF ובחלק מהאתרים המורכבים ההקראה עלולה לא לעבוד. אז אפשר לחזור ולשמוע כאן את התקציר.</div>`,"להאזין לכתבה המלאה")}
   function resetMinuteBtns(){document.querySelectorAll("[data-speak-minute] span").forEach(sp=>sp.textContent="לשמוע בדקה")}
   function speakText(text,btn){const s=synth();if(!s){toast("ההקראה לא נתמכת בדפדפן הזה");return}
+    if(Q.on){Q.on=false;qBar();qLock(false)}
     if(tts.on&&tts.id==="__raw"){stopSpeak();return}
     tts.on=true;tts.id="__raw";if(btn)btn.querySelector("span").textContent="עצירה";
     speakSegs(segments(text,"he"),()=>{tts.on=false;tts.id=null;resetMinuteBtns()})}
@@ -487,6 +533,7 @@ const RUI=(()=>{
         <button type="button" class="act a2" id="rdPlay" data-play="${esc(it.id)}" ${has?"":'aria-disabled="true" disabled'} aria-pressed="${tts.on}">${tts.on?IC.stop+"<span>עצירה</span>":IC.speaker+"<span>השמעה</span>"}</button>
         ${watch?aLink("a1",IC.play,"לראות",watch):""}${listen?aLink("a1",IC.phones,"לשמוע",listen):""}
         ${aLink("a3",IC.link,"לכתבה המקורית",url)}
+        ${it.kind!=="media"&&url?`<button type="button" class="act a3" data-full-listen="${esc(it.id)}">${IC.phones}<span>לשמוע את הכתבה המלאה</span></button>`:""}
         <button type="button" class="act a3" data-save-item="${esc(it.id)}">${IC.save}<span>לשמור</span></button>
         <button type="button" class="act a3" data-share-item="${esc(it.id)}">${IC.share}<span>שיתוף</span></button>
       </div>
@@ -514,6 +561,7 @@ const RUI=(()=>{
       <div class="acts">
         <button type="button" class="act a2" data-read="${esc(it.id)}">${IC.book}<span>לקרוא תקציר</span></button>
         <button type="button" class="act a2" data-listen="${esc(it.id)}">${IC.speaker}<span>לשמוע תקציר</span></button>
+        ${it.kind!=="media"&&kind==="link"?`<button type="button" class="act a2" data-full-listen="${esc(it.id)}">${IC.phones}<span>לשמוע את הכתבה המלאה</span></button>`:""}
         <button type="button" class="act a3" data-close-sheet>${IC.close}<span>חזרה למכ״ם</span></button>
       </div>
       <div class="readnote">הקישור נפתח בכרטיסייה חדשה. המכ״ם נשאר פתוח כאן, וכשתחזרו הוא יחכה במקום שבו עצרתם.</div>`,it.title,"wide")}
@@ -570,6 +618,9 @@ const RUI=(()=>{
     document.addEventListener("click",e=>{
       const sv=e.target.closest("[data-save-item],[data-copy-save]");
       if(sv){if(sv.hasAttribute("data-copy-save"))copy(saveMsg());else{markOpened(sv.dataset.saveItem);openSave(sv.dataset.saveItem)}return}
+      const fl=e.target.closest("[data-full-listen]");if(fl){fullListenHelp(fl.dataset.fullListen);return}
+      const pa=e.target.closest("[data-play-all]");if(pa){if(Q.on){qStop();return}qStart(pa.dataset.playAll.split(",").filter(Boolean),pa.dataset.intro||"");return}
+      const qb=e.target.closest("[data-q]");if(qb){if(qb.dataset.q==="next")qNext();else qStop();return}
       const pv=e.target.closest("[data-preview],[data-ext-open],[data-speak-minute]");
       const vt=e.target.closest("[data-vtest]");if(vt){if(tts.on)stopSpeak();else voiceTest();return}
       if(pv){if(pv.dataset.preview){openPreview(pv.dataset.preview,pv.dataset.pk);return}
@@ -649,7 +700,7 @@ function highlightsHTML(r,tn){const h=(r.highlights||[]).filter(x=>x&&x.text);if
   return `<div class="hl">${order.map(k=>`<div class="hlg"><h4>${esc(tn(k))}</h4><ul>${by[k].map(x=>x.itemId?`<li><button class="mline" data-preview="${esc(x.itemId)}" data-pk="link" title="פתיחת המקור">${esc(x.text)}<span class="msrc" aria-hidden="true">↗ למקור</span></button></li>`:`<li>${esc(x.text)}</li>`).join("")}</ul></div>`).join("")}</div>`}
 function minuteHTML(r){const m=(r.minute||[]).filter(Boolean).map(x=>typeof x==="string"?{text:x}:x).filter(x=>x.text);if(!m.length)return "";
   const say=r.speech_he||["הבוקר בדקה.",r.headline||"",...m.map(x=>x.text)].join(" ");
-  return `<div class="minute"><div class="row" style="justify-content:space-between"><h3>הבוקר בדקה</h3><button class="minibtn" data-speak-minute="${esc(say)}">${IC.speaker}<span>לשמוע בדקה</span></button></div><ol>${m.map(x=>x.itemId?`<li><button class="mline" data-preview="${esc(x.itemId)}" data-pk="link" title="פתיחת המקור">${esc(x.text)}<span class="msrc" aria-hidden="true">↗ למקור</span></button></li>`:`<li>${esc(x.text)}</li>`).join("")}</ol></div>`}
+  return `<div class="minute"><div class="row" style="justify-content:space-between"><h3>הבוקר בדקה</h3><div class="row" style="gap:6px"><button class="minibtn" data-speak-minute="${esc(say)}">${IC.speaker}<span>לשמוע בדקה</span></button><button class="minibtn" data-play-all="${esc([...new Set([...(r.highlights||[]).map(x=>x.itemId),...m.map(x=>x.itemId)].filter(Boolean))].join(","))}" data-intro="${esc(say)}">${IC.phones}<span>להאזין לכל הדו״ח</span></button></div></div><ol>${m.map(x=>x.itemId?`<li><button class="mline" data-preview="${esc(x.itemId)}" data-pk="link" title="פתיחת המקור">${esc(x.text)}<span class="msrc" aria-hidden="true">↗ למקור</span></button></li>`:`<li>${esc(x.text)}</li>`).join("")}</ol></div>`}
 function vArchive(){
   const w=S.q.toLowerCase().split(/\s+/).filter(Boolean);
   const res=ITEMS.filter(i=>(!S.topic||i.topicId===S.topic)&&(!S.kind||(S.kind==="media"?i.kind==="media":S.kind==="heritage"?i.heritage:i.kind!=="media"))&&(!w.length||w.every(x=>[i.title,i.title_en,i.summary,i.summary_en,i.sourceName,(i.people||[]).join(" ")].join(" ").toLowerCase().includes(x))));
